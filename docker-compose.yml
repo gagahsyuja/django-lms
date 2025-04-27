@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres-db
+    env_file:
+      - .env
+    networks:
+      - django
+
+  backend:
+    container_name: lms-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    tty: true
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_started
+    networks:
+      - django
+
+networks:
+  django:
