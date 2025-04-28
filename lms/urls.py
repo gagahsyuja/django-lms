@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from core.views import *
+from django.conf.urls import include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,5 +25,10 @@ urlpatterns = [
     path('course/', allCourse),
     path('course/teacher/', userCourses),
     path('course/stats/', courseStat),
-    path('course/stats/member/', courseMemberStat)
+    path('course/stats/member/', courseMemberStat),
+    path('course/details/<int:course_id>', courseDetail),
+    path('user/', users),
+    path('user/stats', userStat),
 ]
+
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
