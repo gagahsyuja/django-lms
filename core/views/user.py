@@ -36,27 +36,32 @@ def userStat(request):
         .count()
         # .aggregate(average_course_followed_by_one_user=Avg(member_count))
 
-    userFollowCount = CourseMember.objects \
-        .values("user_id") \
-        .annotate(course_followed_count=Count("course_id")) \
+    userFollow = []
 
-    userMostFollowedCourse = userFollowCount \
-        .order_by("-course_followed_count")[:3]
+    for i in CourseMember.objects.values("user_id") \
+        .annotate(followed_count=Count("course_id")) \
+        .order_by("-followed_count"):
+        user = User.objects.get(id=i.get("user_id"))
+        temp = {
+            "user_id": user.id,
+            "username": user.username,
+            "fullname": f"{user.first_name} {user.last_name}",
+            "email": user.email,
+            "course_followed_count": i.get("followed_count")
+        }
+        userFollow.append(temp)
 
-    userFollowedMostCourse = courseFollowedCount \
-        .filter(member_count=1) \
-        .count()
+    usersMostFollowed = userFollow[:3]
 
-    userWithNoCourse = userFollowCount \
-        .filter(course_followed_count=0)
+    usersWithNoCourse = [i for i in userFollow if i.get("course_followed_count") == 0]
 
     result = {
         "user_count": users.count(),
         "user_with_course_count": usersWithCourseCount,
         "user_without_course_count": usersWithoutCourseCount,
         "average_course_followed_by_a_user": courseFollowedByOneUserCount,
-        "user_with_most_followed_course": list(userMostFollowedCourse),
-        "user_with_no_course_followed": list(userWithNoCourse)
+        "user_with_most_followed_course": usersMostFollowed,
+        "user_with_no_course_followed": usersWithNoCourse
     }
 
     return JsonResponse(result, safe=False)
